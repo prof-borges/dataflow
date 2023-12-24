@@ -1,0 +1,279 @@
+let
+  Fonte = Web.Contents(
+    "https://chave"
+  ), 
+  #"Tabela extraída de HTML" = Html.Table(
+    Fonte, 
+    {
+      {"Column1", "TABLE > * > TR > :nth-child(1)"}, 
+      {"Column2", "TABLE > * > TR > :nth-child(2)"}, 
+      {"Column3", "TABLE > * > TR > :nth-child(3)"}, 
+      {"Column4", "TABLE > * > TR > :nth-child(4)"}, 
+      {"Column5", "TABLE > * > TR > :nth-child(5)"}, 
+      {"Column6", "TABLE > * > TR > :nth-child(6)"}, 
+      {"Column7", "TABLE > * > TR > :nth-child(7)"}, 
+      {"Column8", "TABLE > * > TR > :nth-child(8)"}, 
+      {"Column9", "TABLE > * > TR > :nth-child(9)"}, 
+      {"Column10", "TABLE > * > TR > :nth-child(10)"}, 
+      {"Column11", "TABLE > * > TR > :nth-child(11)"}, 
+      {"Column12", "TABLE > * > TR > :nth-child(12)"}, 
+      {"Column13", "TABLE > * > TR > :nth-child(13)"}, 
+      {"Column14", "TABLE > * > TR > :nth-child(14)"}, 
+      {"Column15", "TABLE > * > TR > :nth-child(15)"}, 
+      {"Column16", "TABLE > * > TR > :nth-child(16)"}, 
+      {"Column17", "TABLE > * > TR > :nth-child(17)"}, 
+      {"Column18", "TABLE > * > TR > :nth-child(18)"}, 
+      {"Column19", "TABLE > * > TR > :nth-child(19)"}
+    }, 
+    [RowSelector = "TABLE > * > TR"]
+  ), 
+  #"Cabeçalhos Promovidos" = Table.Buffer( Table.PromoteHeaders(
+    #"Tabela extraída de HTML", 
+    [PromoteAllScalars = true])
+  ), 
+  #"Coluna Duplicada" = Table.DuplicateColumn(
+    #"Cabeçalhos Promovidos", 
+    "Idade do Chamado - Dias", 
+    "Idade do Chamado - Dias - Copiar"
+  ), 
+  #"Colunas Reordenadas" = Table.ReorderColumns(
+    #"Coluna Duplicada", 
+    {
+      "Nº Chamado", 
+      "Fantasia", 
+      "Nome Completo do Operador", 
+      "Nome do Status", 
+      "Nome da Solicitação", 
+      "Idade do Chamado - Dias", 
+      "Idade do Chamado - Dias - Copiar", 
+      "Status do Primeiro Atendimento - Nome", 
+      "Status do Tempo de Solução - Nome", 
+      "Nome da Causa", 
+      "Em Aberto"
+    }
+  ), 
+  #"Dividir Coluna pela Posição" = Table.SplitColumn(
+    #"Colunas Reordenadas", 
+    "Idade do Chamado - Dias", 
+    Splitter.SplitTextByPositions({0, 4}, true), 
+    {"Idade do Chamado - Dias.1", "Idade do Chamado - Dias.2"}
+  ), 
+  #"Tipo Alterado1" = Table.TransformColumnTypes(
+    #"Dividir Coluna pela Posição", 
+    {{"Idade do Chamado - Dias.1", Int64.Type}, {"Idade do Chamado - Dias.2", type text}}
+  ), 
+  #"Outras Colunas Removidas" = Table.SelectColumns(
+    #"Tipo Alterado1", 
+    {
+      "Nº Chamado", 
+      "Fantasia", 
+      "Nome Completo do Operador", 
+      "Nome do Status", 
+      "Nome da Solicitação", 
+      "Idade do Chamado - Dias.1", 
+      "Idade do Chamado - Dias - Copiar", 
+      "Status do Primeiro Atendimento - Nome", 
+      "Status do Tempo de Solução - Nome", 
+      "Nome da Causa", 
+      "Data de Finalização", 
+      "Nome do Tipo de Ocorrência", 
+      "Assunto", 
+      "Nome do Grupo", 
+      "Data de Criação", 
+      "Total de Horas Tarifadas", 
+      "Nome da Sub-Categoria", 
+      "Nome da Categoria", 
+      "Grupo Abertura do Chamado", 
+      "Em Aberto"
+    }
+  ), 
+  #"Tipo Alterado2" = Table.TransformColumnTypes(
+    #"Outras Colunas Removidas", 
+    {{"Idade do Chamado - Dias.1", type text}}
+  ), 
+  #"Dividir Coluna por Delimitador" = Table.SplitColumn(
+    #"Tipo Alterado2", 
+    "Idade do Chamado - Dias.1", 
+    Splitter.SplitTextByDelimiter("-", QuoteStyle.Csv), 
+    {"Idade do Chamado - Dias.1.1", "Idade do Chamado - Dias.1.2"}
+  ), 
+  #"Tipo Alterado3" = Table.TransformColumnTypes(
+    #"Dividir Coluna por Delimitador", 
+    {{"Idade do Chamado - Dias.1.1", Int64.Type}, {"Idade do Chamado - Dias.1.2", Int64.Type}}
+  ), 
+  #"Colunas Mescladas" = Table.CombineColumns(
+    Table.TransformColumnTypes(
+      #"Tipo Alterado3", 
+      {{"Idade do Chamado - Dias.1.2", type text}, {"Idade do Chamado - Dias.1.1", type text}}, 
+      "pt-BR"
+    ), 
+    {"Idade do Chamado - Dias.1.2", "Idade do Chamado - Dias.1.1"}, 
+    Combiner.CombineTextByDelimiter("", QuoteStyle.None), 
+    "Mesclado"
+  ), 
+  #"Tipo Alterado4" = Table.TransformColumnTypes(#"Colunas Mescladas", {{"Mesclado", Int64.Type}}), 
+  #"Outras Colunas Removidas1" = Table.SelectColumns(
+    #"Tipo Alterado4", 
+    {
+      "Nº Chamado", 
+      "Fantasia", 
+      "Nome Completo do Operador", 
+      "Nome do Status", 
+      "Nome da Solicitação", 
+      "Mesclado", 
+      "Idade do Chamado - Dias - Copiar", 
+      "Status do Primeiro Atendimento - Nome", 
+      "Status do Tempo de Solução - Nome", 
+      "Nome da Causa", 
+      "Data de Finalização", 
+      "Nome do Tipo de Ocorrência", 
+      "Assunto", 
+      "Nome do Grupo", 
+      "Data de Criação", 
+      "Total de Horas Tarifadas", 
+      "Nome da Categoria", 
+      "Grupo Abertura do Chamado", 
+      "Em Aberto"
+    }
+  ), 
+  #"Tipo Alterado5" = Table.TransformColumnTypes(
+    #"Outras Colunas Removidas1", 
+    {{"Mesclado", type number}, {"Data de Finalização", type date}}
+  ), 
+  #"Erros Substituídos" = Table.ReplaceErrorValues(
+    #"Tipo Alterado5", 
+    {{"Data de Finalização", #date(2000, 1, 1)}}
+  ), 
+  #"Colunas Renomeadas" = Table.RenameColumns(
+    #"Erros Substituídos", 
+    {{"Mesclado", "Mesclado_Idade"}}
+  ), 
+  #"Tipo Alterado6" = Table.TransformColumnTypes(
+    #"Colunas Renomeadas", 
+    {{"Data de Criação", type date}}
+  ), 
+  #"Coluna Duplicada1" = Table.DuplicateColumn(#"Tipo Alterado6", "Assunto", "Assunto - Copiar"), 
+  #"Dividir Coluna por Delimitador1" = Table.SplitColumn(
+    #"Coluna Duplicada1", 
+    "Assunto - Copiar", 
+    Splitter.SplitTextByDelimiter("-", QuoteStyle.Csv), 
+    {
+      "Assunto - Copiar.1", 
+      "Assunto - Copiar.2", 
+      "Assunto - Copiar.3", 
+      "Assunto - Copiar.4", 
+      "Assunto - Copiar.5", 
+      "Assunto - Copiar.6"
+    }
+  ), 
+  #"Tipo Alterado7" = Table.TransformColumnTypes(
+    #"Dividir Coluna por Delimitador1", 
+    {
+      {"Nome do Tipo de Ocorrência", type text}, 
+      {"Assunto", type text}, 
+      {"Nome do Grupo", type text}, 
+      {"Assunto - Copiar.1", type text}, 
+      {"Assunto - Copiar.2", type text}, 
+      {"Assunto - Copiar.3", type text}, 
+      {"Assunto - Copiar.4", type text}, 
+      {"Assunto - Copiar.5", type text}, 
+      {"Assunto - Copiar.6", type text}
+    }
+  ), 
+  #"Colunas Renomeadas1" = Table.RenameColumns(
+    #"Tipo Alterado7", 
+    {
+      {"Assunto - Copiar.1", "Grupo_Assunto"}, 
+      {"Assunto - Copiar.2", "Categoria"}, 
+      {"Assunto - Copiar.3", "Subcategoria"}, 
+      {"Assunto - Copiar.4", "area"}, 
+      {"Assunto - Copiar.5", "Local"}, 
+      {"Assunto - Copiar.6", "Sublocal"}
+    }
+  ), 
+  #"Outras Colunas Removidas2" = Table.SelectColumns(
+    #"Colunas Renomeadas1", 
+    {
+      "Nº Chamado", 
+      "Fantasia", 
+      "Nome Completo do Operador", 
+      "Nome do Status", 
+      "Nome da Solicitação", 
+      "Mesclado_Idade", 
+      "Idade do Chamado - Dias - Copiar", 
+      "Status do Primeiro Atendimento - Nome", 
+      "Status do Tempo de Solução - Nome", 
+      "Nome da Causa", 
+      "Data de Finalização", 
+      "Nome do Tipo de Ocorrência", 
+      "Nome do Grupo", 
+      "Data de Criação", 
+      "Total de Horas Tarifadas", 
+      "Nome da Categoria", 
+      "Grupo Abertura do Chamado", 
+      "Em Aberto", 
+      "Grupo_Assunto", 
+      "Categoria", 
+      "Subcategoria", 
+      "Sublocal"
+    }
+  ), 
+  #"Coluna Duplicada2" = Table.DuplicateColumn(
+    #"Outras Colunas Removidas2", 
+    "Fantasia", 
+    "Fantasia - Copiar"
+  ), 
+  ColunasRenomeadas2 = Table.RenameColumns(#"Coluna Duplicada2", {{"Fantasia - Copiar", "Sigla"}}), 
+  Substituicoes = {
+    {"TBFORTE - BAURU", "BAU"}, 
+    {"TBFORTE - SÃO CRISTÓVÃO", "SC"}, 
+    {"TBFORTE - LIMÃO", "LIM"}, 
+    {"TBFORTE - PRESIDENTE PRUDENTE", "PPB"}, 
+    {"TBFORTE - VITORIA", "VIX"}, 
+    {"TBFORTE - ITABUNA", "ITN"}, 
+    {"TBFORTE - TERESINA", "THE"}, 
+    {"TBFORTE - PORTO VELHO", "PVH"}, 
+    {"TBFORTE - RECIFE", "REC"}, 
+    {"TBFORTE - SALVADOR", "SSA"}, 
+    {"TBFORTE - PARNAIBA", "PHB"}, 
+    {"TBFORTE - ARACAJU", "AJU"}, 
+    {"TBFORTE - CURITIBA", "CWB"}, 
+    {"TBFORTE - PORTO ALEGRE", "POA"}, 
+    {"TBFORTE - MACEIO", "MCZ"}, 
+    {"TBFORTE - CAMPINA GRANDE", "CPV"}, 
+    {"TBFORTE - CONGONHAS", "CGH"}, 
+    {"TBFORTE - SOROCABA", "SOD"}, 
+    {"TBFORTE - SANTOS", "SSZ"}, 
+    {"TBFORTE - CAMPINAS", "CPQ"}, 
+    {"TBFORTE - PORTO SEGURO", "BPS"}, 
+    {"TBFORTE - PETROLINA", "PNZ"}, 
+    {"TBFORTE - MACAPA", "MCP"}, 
+    {"TBFORTE - CARUARU", "CAU"}, 
+    {"TBFORTE - NATAL", "NAT"}, 
+    {"TBFORTE - VITORIA DA CONQUISTA", "VDC"}, 
+    {"TBFORTE - SAO JOSE DOS CAMPOS", "SJK"}, 
+    {"TBFORTE - SEDE", "SEDE"}, 
+    {"TBFORTE - SÃO MATEUS", "SAM"}, 
+    {"TBFORTE - BARREIRAS", "BRA"}, 
+    {"TBFORTE - TIMON", "TMN"}, 
+    {"TBFORTE - CAMPO GRANDE", "CGR"}
+  }, 
+  SubstituicaoTabela = List.Accumulate(
+    Substituicoes, 
+    ColunasRenomeadas2, 
+    (tabela, substituicao) =>
+      Table.ReplaceValue(tabela, substituicao{0}, substituicao{1}, Replacer.ReplaceValue, {"Sigla"})
+  ), 
+  #"Personalização adicionada" = Table.AddColumn(
+    SubstituicaoTabela, 
+    "HoraSerial", 
+    each Duration.FromText([Total de Horas Tarifadas]) / #duration(1, 0, 0, 0)
+  ), 
+  #"Transformar colunas" = Table.TransformColumnTypes(
+    #"Personalização adicionada", 
+    {{"HoraSerial", type number}}
+  ), 
+  #"Substituir erros" = Table.ReplaceErrorValues(#"Transformar colunas", {{"HoraSerial", null}}),
+  #"Tipo de coluna alterado" = Table.TransformColumnTypes(#"Substituir erros", {{"Idade do Chamado - Dias - Copiar", Int64.Type}})
+in
+  #"Tipo de coluna alterado"

@@ -1,0 +1,55 @@
+let
+  Fonte = Web.Contents("https://app.chave"), 
+  #"Tabela extraída de HTML" = Html.Table(
+    Fonte, 
+    {
+      {"Column1", "TABLE > * > TR > :nth-child(1)"}, 
+      {"Column2", "TABLE > * > TR > :nth-child(2)"}, 
+      {"Column3", "TABLE > * > TR > :nth-child(3)"}, 
+      {"Column4", "TABLE > * > TR > :nth-child(4)"}, 
+      {"Column5", "TABLE > * > TR > :nth-child(5)"}, 
+      {"Column6", "TABLE > * > TR > :nth-child(6)"}, 
+      {"Column7", "TABLE > * > TR > :nth-child(7)"}, 
+      {"Column8", "TABLE > * > TR > :nth-child(8)"}
+    }, 
+    [RowSelector = "TABLE > * > TR"]
+  ), 
+  #"Cabeçalhos Promovidos" = Table.PromoteHeaders(
+    #"Tabela extraída de HTML", 
+    [PromoteAllScalars = true]
+  ), 
+  #"Tipo Alterado" = Table.Buffer(
+    Table.TransformColumnTypes(
+      #"Cabeçalhos Promovidos", 
+      {
+        {"Referencia", type text}, 
+        {"Nome Empresa", type text}, 
+        {"Codigo", type text}, 
+        {"Nome do Produto", type text}, 
+        {"Quantidade", type number}, 
+        {"Valor Venda", type number}, 
+        {"Data Movimento", type date}, 
+        {"Grupo", type text}
+      }
+    )
+  ), 
+  #"Personalização Adicionada" = Table.AddColumn(
+    #"Tipo Alterado", 
+    "Custo", 
+    each ([Quantidade] * - 1) * [Valor Venda]
+  ), 
+  #"Personalização Adicionada1" = Table.AddColumn(
+    #"Personalização Adicionada", 
+    "Utilizados", 
+    each [Quantidade] * - 1
+  ), 
+  #"Tipo Alterado1" = Table.TransformColumnTypes(
+    #"Personalização Adicionada1", 
+    {{"Quantidade", type text}, {"Utilizados", type number}, {"Custo", type number}}
+  ), 
+  #"Outras Colunas Removidas" = Table.SelectColumns(
+    #"Tipo Alterado1", 
+    {"Nome Empresa", "Codigo", "Grupo", "Custo", "Utilizados"}
+  )
+in
+  #"Outras Colunas Removidas"

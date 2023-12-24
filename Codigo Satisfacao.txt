@@ -1,0 +1,20 @@
+let
+  Fonte = 
+    Web.Contents(
+      "https://chave", 
+      [Timeout = #duration(0, 5, 0, 0)]
+    
+  ), 
+
+
+    // Número máximo de colunas desejadas
+    NumeroDeColunas = 20,
+
+    // Gera uma lista de pares de coluna e seletor
+    ListaDeColunas = List.Transform({1 .. NumeroDeColunas}, each {"Column" & Text.From(_), "TABLE > * > TR > :nth-child(" & Text.From(_) & ")"}),
+
+    // Cria a tabela
+    TabelaExtraidaHTML = Html.Table(Fonte, ListaDeColunas, [RowSelector = "TABLE > * > TR"]),
+    CabeçalhosPromovidos = Table.PromoteHeaders(TabelaExtraidaHTML, [PromoteAllScalars = true])
+in
+    CabeçalhosPromovidos
