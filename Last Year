@@ -1,0 +1,8 @@
+Fat LY = 
+CALCULATE(
+    [Faturamento],
+    CALCULATETABLE(
+        SAMEPERIODLASTYEAR(dCalendario[Data]),
+        dCalendario[Anterior a ultima data] = 1
+    )
+)
