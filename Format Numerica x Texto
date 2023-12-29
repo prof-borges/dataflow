@@ -1,8 +1,17 @@
-Formatação: 
-SWITCH(
-        TRUE(),
-        _RotDados >= 1000000000, FORMAT( _RotDados, " #,0,,,.00 Bi" ),
-        _RotDados >= 1000000, FORMAT( _RotDados, " #,0,,.00 Mi" ),
-        _RotDados >= 1000, FORMAT( _RotDados, " #,0,.00 K" ),
-        FORMAT( _RotDados, " #" )
+Barra = 
+VAR vMaiorValor =
+    MAXX ( ALLSELECTED ( dVendedores[Vendedor] ), [Total Venda] 
     )
+VAR vRepeticao =
+    DIVIDE ( [Total Venda], vMaiorValor ) * 15
+VAR _RotDados = [Total Venda]
+VAR vFormatacao =
+    SWITCH (
+        TRUE (),
+        _RotDados >= 1000000000, FORMAT ( _RotDados, " #,0,,,.00 Bi" ),
+        _RotDados >= 1000000, FORMAT ( _RotDados, " #,0,,.00 Mi" ),
+        _RotDados >= 1000, FORMAT ( _RotDados, " #,0,.00 K" ),
+        FORMAT ( _RotDados, " #" )
+    )
+RETURN
+    REPT ( "▇", vRepeticao ) & vFormatacao
