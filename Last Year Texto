@@ -1,0 +1,18 @@
+FAT LY Ajuste = 
+VAR vAjuste = 
+IF(
+      [Fat LY],
+        FORMAT(
+            [Fat LY],
+            "R$ 0,000"
+        ),
+        "-"
+)
+VAR vResultado = 
+IF(
+    ISCROSSFILTERED(dCalendario[Ano]),
+        vAjuste,
+        "-"
+)
+RETURN
+vResultado
