@@ -1,0 +1,26 @@
+// #"CabeçalhosPromovidos"
+let
+    ConverteDuração = (texto) =>
+    let
+        // Divida a string de tempo em partes (HH, mm, ss)
+        TimeParts = Text.Split(texto, ":"),
+        // Converta cada parte para número
+        Hours = Number.FromText(TimeParts{0}),
+        Minutes = Number.FromText(TimeParts{1}),
+        Seconds = Number.FromText(TimeParts{2}),
+        // Calcule o total em segundos
+        TotalSeconds = (Hours * 3600) + (Minutes * 60) + Seconds
+    in
+        TotalSeconds,
+  MaquinaParada = Table.AddColumn(
+    #"CabeçalhosPromovidos", 
+    "MaquinaParada", 
+    each ConverteDuração([#"Idade do Chamado - Horas e Minutos"]
+    ),
+  TempoReparo = Table.AddColumn(
+    MaquinaParada, 
+    "TempoReparo", 
+    each ConverteDuração([#"Total de Horas Tarifadas"])
+  )
+in
+  TempoReparo
