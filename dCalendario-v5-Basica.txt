@@ -1,0 +1,39 @@
+let
+
+//Configurações
+
+//Data Inicial
+    dataInicial = #date(2023, 1, 2), 
+
+//Data Final
+    dataFinal = Date.EndOfYear(Date.From(DateTime.LocalNow())), 
+
+//Lista de todas as datas no range
+    datasRange = List.Dates(dataInicial, Duration.Days(dataFinal - dataInicial)+1, #duration(1, 0, 0, 0)), 
+
+//Range de todos os anos
+    anosRange = List.Buffer({Date.Year(dataInicial)..Date.Year(dataFinal)}),
+
+//Define a função de transformação de cada data do range de datas
+    fxLinhaCalendario = (data) =>
+        {
+            data,
+            Date.Year(data),
+            Date.Month(data),
+            Text.Proper(Date.MonthName(data, "pt-BR"))
+        },
+
+//Gera a tabela calendário
+    calendario = #table(
+        //Nomes e tipos das colunas
+        type table[
+            Data = date, 
+            Ano = Int64.Type,
+            MesNo = Int64.Type,  
+            Mes = text
+        ],
+        //Invoca função de transformação
+        List.Transform(datasRange, fxLinhaCalendario)
+    )
+in
+    calendario
